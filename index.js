@@ -3,7 +3,7 @@ const axios = require("axios");
 require("dotenv").config();
 const TELEGRAM_BOT_API_KEY = process.env.TELEGRAM_BOT_API_KEY;
 
-const CACHE = {};
+let CACHE = {};
 
 const bot = new Telegraf(TELEGRAM_BOT_API_KEY);
 /**
@@ -15,7 +15,7 @@ const getCoins = async () => {
   const res = await new Promise(async (resolve, reject) => {
     try {
       response = await axios.get(
-        "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest",
+        "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=5000",
         {
           headers: {
             "X-CMC_PRO_API_KEY": process.env.CMC_API_KEY,
@@ -124,8 +124,12 @@ const handleCoinDataRequest = async (ctx, coin) => {
   if (!coinData) {
     ctx.reply("Coin not found");
   } else {
-    CACHE[coin].data = coinData;
-    CACHE[coin].timestamp = Date.now();
+    coins.data.forEach((c) => {
+      CACHE[c.symbol] = {
+        data: c,
+        timestamp: Date.now(),
+      };
+    });
     try {
       sendCoinData(ctx, coinData);
     } catch (ex) {
