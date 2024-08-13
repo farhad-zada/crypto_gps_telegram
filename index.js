@@ -125,10 +125,12 @@ const handleCoinDataRequest = async (ctx, coin) => {
     ctx.reply("Coin not found");
   } else {
     coins.data.forEach((c) => {
-      CACHE[c.symbol] = {
-        data: c,
-        timestamp: Date.now(),
-      };
+      if (!CACHE[c.symbol]) {
+        CACHE[c.symbol] = {
+          data: c,
+          timestamp: Date.now(),
+        };
+      }
     });
     try {
       sendCoinData(ctx, coinData);
@@ -142,8 +144,8 @@ const handleCoinDataRequest = async (ctx, coin) => {
 
 bot.hears("hi", (ctx) => ctx.reply("Hey there!"));
 
-bot.hears(/price \w+/i, (ctx) => {
-  let coin = ctx.message.text.split(" ")[1];
+bot.hears(/^price \w+/i, (ctx) => {
+  let coin = /price (\w+)/i.exec(ctx.message.text)[1];
   if (!coin) {
     ctx.reply("Please provide a coin symbol");
     return;
